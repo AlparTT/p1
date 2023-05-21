@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Takvim</title>
+    <style>
+        .calendar {
+            font-family: Arial, sans-serif;
+        }
+        
+        .calendar table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .calendar th,
+        .calendar td {
+            padding: 10px;
+            text-align: center;
+            border: 1px solid #ccc;
+        }
+        
+        .calendar td:hover {
+            background-color: #f2f2f2;
+            cursor: pointer;
+        }
+        
+        .saturday,
+        .sunday {
+            background-color: yellow;
+        }
+        
+        .selected-day {
+            background-color: darkred;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="calendar">
+        <h2>İzinli Olduğunuz Günleri Belirtiniz</h2>
+        <select id="personelDropdown" onchange="updateCalendar()">
+            <option value="">Personel Seçin</option>
+            <option value="İlkkan Alpar Serimer">İlkkan Alpar Serimer</option>
+            <option value="Emrah Al">Emrah Al</option>
+            <option value="İbrahim Ağturk">İbrahim Ağturk</option>
+            <option value="Bilal Dinler">Bilal Dinler</option>
+        </select>
+        <br><br>
+        <table id="calendarTable">
+            <thead>
+                <tr>
+                    <th colspan="7">Mevcut Ayın Takvimi</th>
+                </tr>
+                <tr id="headerRow"></tr>
+            </thead>
+            <tbody id="calendarBody"></tbody>
+        </table>
+        <br>
+        <button onclick="sendEmail()">İzin Günlerini Gönder</button>
+    </div>
+    
+    <script>
+        // JavaScript ile takvim oluşturma
+        var headerRow = document.getElementById("headerRow");
+        var calendarBody = document.getElementById("calendarBody");
+        var selectedDays = [];
+        var selectedPersonel = "";
+        
+        // Mevcut tarihi al
+        var today = new Date();
+        var year = today.getFullYear();
+        var month = today.getMonth();
+        
+        // Ayın başlangıcını ve sonunu bul
+        var firstDay = new Date(year, month, 1);
+        var lastDay = new Date(year, month + 1, 0);
+        
+        // Başlık satırını oluştur
+        var daysOfWeek = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
+        for (var i = 0; i < 7; i++) {
+            var headerCell = document.createElement("th");
+            headerCell.textContent = daysOfWeek[i];
+            headerRow.appendChild(headerCell);
+        }
+        
+        // Takvim içeriğini oluştur
+        var currentDay = 1;
+        var totalDays = lastDay.getDate();
+        var startDay = firstDay.getDay();
+        
+        for (var i = 0; i < 6; i++) {
+            var row = document.createElement("tr");
+            
+            for (var j = 0; j < 7; j++) {
+                if ((i === 0 && j < startDay) || currentDay > totalDays) {
+                    var emptyCell = document.createElement("td");
+                    row.appendChild(emptyCell);
+                } else {
+                    var dayCell = document.createElement("td");
+                    dayCell.textContent = currentDay;
+                    dayCell.addEventListener("click", selectDay);
+                    row.appendChild(dayCell);
+                    currentDay++;
+                    
+                    if (j === 5) {
+                        dayCell.classList.add("saturday");
+                    } else if (j === 6) {
+                        dayCell.classList.add("sunday");
+                    }
+                }
+            }
+            
+            calendarBody.appendChild(row);
+            
+            if (currentDay > totalDays) {
+                break;
+            }
+        }
+        
+        function selectDay() {
+            this.classList.toggle("selected-day");
+            var day = parseInt(this.textContent);
+            
+            if (selectedDays.includes(day)) {
+                selectedDays.splice(selectedDays.indexOf(day), 1);
+            } else {
+                selectedDays.push(day);
+            }
+            
+            console.log("Seçilen günler: " + selectedDays);
+        }
+        
+        function updateCalendar() {
+            selectedPersonel = document.getElementById("personelDropdown").value;
+            console.log("Seçilen personel: " + selectedPersonel);
+            // Takvim güncellemelerini burada yapabilirsiniz
+        }
+        
+       function sendEmail() {
+    if (selectedPersonel === "") {
+        alert("Lütfen bir personel seçin.");
+        return;
+    }
+    
+    if (selectedDays.length === 0) {
+        var noIzinMessage = "İzinim bulunmamaktadır.";
+        var mailtoLink = "mailto:alpar.serimer@turktelekom.com.tr" +
+                         "?subject=" + encodeURIComponent(selectedPersonel + " Puantajı") +
+                         "&body=" + encodeURIComponent(noIzinMessage);
+        window.location.href = mailtoLink;
+    } else {
+        var subject = selectedPersonel + " Puantajı";
+        var body = "Seçilen izin günleri:\n\n";
+        
+        for (var i = 0; i < selectedDays.length; i++) {
+            body += " - " + selectedDays[i] + ". gün\n";
+        }
+        
+        var mailtoLink = "mailto:alpar.serimer@turktelekom.com.tr" +
+                         "?subject=" + encodeURIComponent(subject) +
+                         "&body=" + encodeURIComponent(body);
+        window.location.href = mailtoLink;
+    }
+}
+
+    </script>
+</body>
+</html>
